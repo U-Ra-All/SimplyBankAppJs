@@ -119,7 +119,7 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseNickname = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const formatTransactionDate = function (date) {
+const formatTransactionDate = function (date, locale) {
   const getDaysBetween2Dates = (date1, date2) =>
     Math.round(Math.abs((date2 - date1) / (1000 * 60 * 60 * 24)));
 
@@ -130,11 +130,12 @@ const formatTransactionDate = function (date) {
   if (daysPassed === 1) return 'Вчера';
   if (daysPassed <= 5) return `${daysPassed} дня назад`;
   else {
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const year = date.getFullYear();
+    // const day = `${date.getDate()}`.padStart(2, '0');
+    // const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    // const year = date.getFullYear();
 
-    return `${day}/${month}/${year}`;
+    // return `${day}/${month}/${year}`;
+    return new Intl.DateTimeFormat(locale).format(date);
   }
 };
 
@@ -149,7 +150,7 @@ const displayTransactions = function (account, sort = false) {
     const transType = trans > 0 ? 'deposit' : 'withdrawal';
 
     const date = new Date(account.transactionsDates[index]);
-    const transDate = formatTransactionDate(date);
+    const transDate = formatTransactionDate(date, account.locale);
 
     const transactionRow = `
     <div class="transactions__row">
@@ -230,11 +231,9 @@ const updateUi = function (account) {
 let currentAccount;
 
 // Always logged in
-// currentAccount = account1;
-// updateUi(currentAccount);
-// containerApp.style.opacity = 100;
-
-// labelDate.textContent = `${day}/${month}/${year}`;
+currentAccount = account1;
+updateUi(currentAccount);
+containerApp.style.opacity = 100;
 
 // Event Handlers
 
@@ -253,10 +252,28 @@ btnLogin.addEventListener('click', function (e) {
       currentAccount.userName.split(' ')[0]
     }!`;
 
+    // const now = new Date();
+    // const day = `${now.getDate()}`.padStart(2, '0');
+    // const month = `${now.getMonth() + 1}`.padStart(2, '0');
+    // const year = now.getFullYear();
+    // labelDate.textContent = `${day}/${month}/${year}`;
+
     const now = new Date();
-    const day = `${now.getDate()}`.padStart(2, '0');
-    const month = `${now.getMonth() + 1}`.padStart(2, '0');
-    const year = now.getFullYear();
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      weekday: 'long',
+    };
+    // const locale = navigator.language;
+    // console.log(locale);
+
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
 
     // Clear inputs
     inputLoginUsername.value = '';
