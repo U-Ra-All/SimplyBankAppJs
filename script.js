@@ -259,12 +259,39 @@ const updateUi = function (account) {
   displayTotal(account);
 };
 
-let currentAccount;
+let currentAccount, currentLogOutTimer;
 
 // Always logged in
-currentAccount = account1;
-updateUi(currentAccount);
-containerApp.style.opacity = 100;
+// currentAccount = account1;
+// updateUi(currentAccount);
+// containerApp.style.opacity = 100;
+
+const startLogoutTimer = function () {
+  const logOutTimerCallback = function () {
+    const minutes = String(Math.trunc(time / 60)).padStart(2, '0');
+    const seconds = String(time % 60).padStart(2, '0');
+    // В каждом вызове показывать оставшееся время в UI
+    labelTimer.textContent = `${minutes}:${seconds}`;
+
+    // После истечения времени остановить таймер и выйти из приложения
+    if (time === 0) {
+      clearInterval(logOutTimer);
+      containerApp.style.opacity = 0;
+      labelWelcome.textContent = 'Войдите в свой аккаунт';
+    }
+
+    time--;
+  };
+
+  // Установить время выхода через 5 минут
+  let time = 300;
+
+  // Вызов таймера каждую секунду
+  logOutTimerCallback();
+  const logOutTimer = setInterval(logOutTimerCallback, 1000);
+
+  return logOutTimer;
+};
 
 // Event Handlers
 
@@ -311,6 +338,10 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginPin.value = '';
     inputLoginPin.blur();
 
+    // Check if the timer exists
+    if (currentLogOutTimer) clearInterval(currentLogOutTimer);
+    currentLogOutTimer = startLogoutTimer();
+
     updateUi(currentAccount);
   }
 });
@@ -340,6 +371,10 @@ btnTransfer.addEventListener('click', function (e) {
     recipientAccount.transactionsDates.push(new Date().toISOString());
 
     updateUi(currentAccount);
+
+    // Reset the timer
+    clearInterval(currentLogOutTimer);
+    currentLogOutTimer = startLogoutTimer();
   }
 });
 
@@ -378,6 +413,10 @@ btnLoan.addEventListener('click', function (e) {
     }, 5000);
   }
   inputLoanAmount.value = '';
+
+  // Reset the timer
+  clearInterval(currentLogOutTimer);
+  currentLogOutTimer = startLogoutTimer();
 });
 
 let transactionsSorted = false;
